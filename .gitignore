@@ -1,0 +1,70 @@
+# ==========================================
+# NeatNest Kafka Project .gitignore
+# ==========================================
+
+# Dependencies
+node_modules/
+client/node_modules/
+server/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+client/dist/
+client/build/
+server/dist/
+server/build/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+server/.env
+client/.env
+
+# Database related
+*.sql.backup
+*.dump
+*.sql~
+
+# Kafka related
+kafka-logs/
+zookeeper-data/
+*.log
+logs/
+server/logs/
+
+# IDE and editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+*.tmp
+*.temp
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# SSL certificates
+*.pem
+*.key
+*.crt
+
+# Cache
+.eslintcache
+.cache/
+
+# Keep empty directories
+!.gitkeep
+!server/uploads/.gitkeep
+!server/logs/.gitkeep
