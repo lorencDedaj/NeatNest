@@ -35,6 +35,22 @@ job-portal/
 │   └── setup.sql                     # Database schema creation (users, jobs, applications, stats tables)
 └── README.md                         # Project documentation and setup instructions
 ```
+
+┌─────────────────┐    ┌─────────────────┐
+│     Client      │    │     Server      │
+│   (React App)   │────│   (Node.js)     │
+│                 │    │  Single App     │
+└─────────────────┘    └─────────────────┘
+                                │
+                       ┌─────────────────┐
+                       │     Kafka       │
+                       │ (Local Install) │
+                       └─────────────────┘
+                                │
+                       ┌─────────────────┐
+                       │   PostgreSQL    │
+                       │ (Local Install) │
+                       └─────────────────┘
 Login Page
 ╔══════════════════════════════════════╗
 ║            Job Portal                ║
