@@ -1,4 +1,4 @@
-// scripts/dev.js 
+// scripts/dev.js
 import { exec } from 'child_process';
 
 console.log('🚀 Starting NeatNest development servers...\n');
@@ -28,4 +28,4 @@ setTimeout(() => {
 }, 2000);
 
 console.log('📱 Client: http://localhost:3000');
-console.log('🔧 Server: http://localhost:5000');
+console.log('🔧 Server: http://localhost:8000');
