@@ -1,6 +1,8 @@
 -- database/seed.sql
 
 INSERT INTO users (email, password, role) VALUES
+('recruiter2@example.com', 'password', 'recruiter'),
+('applicant2@example.com', 'password', 'applicant'),
 ('recruiter@example.com', 'password123', 'recruiter'),
 ('applicant@example.com', 'password456', 'applicant');
 
