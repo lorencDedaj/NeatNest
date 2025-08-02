@@ -34,6 +34,7 @@ import cors from 'cors';
 import 'dotenv/config';
 import pool from './models/db.js'; // Import the pool
 import usersRoute from './routes/users.js';
+import jobsRouter from './routes/jobs.js';
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -46,7 +47,7 @@ app.use(express.json());
 app.get('/', (req, res) => {
   res.send('Welcome to the NeatNest API!');
 });
-
+app.use('/api/jobs', jobsRouter);
 app.use('/api/users', usersRoute);
 
 app.listen(PORT, async () => {
