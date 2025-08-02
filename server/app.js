@@ -31,10 +31,9 @@
 // server/app.js
 import express from 'express';
 import cors from 'cors';
-import 'dotenv/config';
-import pool from './models/db.js'; // Import the pool
-import usersRoute from './routes/users.js';
-import jobsRouter from './routes/jobs.js';
+
+// 1. step 1 import Kafka from kafkajs
+import {Kafka} from 'kafkajs';
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -42,7 +41,45 @@ const PORT = process.env.PORT || 8000;
 app.use(cors());
 app.use(express.json());
 
-// Your routes will go here...
+
+// step 2. to create a kafka client instance, that only to create kafka component:
+// for example producer, consumer, admin etc.
+const kafka = new Kafka({
+  clientId: 'my-job-api',
+  brokers: ['localhost:9092'], // replace to your  Kafka broker address
+});
+
+const producer = kafka.producer();
+// this is only for producer to connect to kafka
+const startKafka = async ()=>{
+  await producer.connect();
+  console.log('Kafka Producer connected!');
+}
+startKafka().catch(console.error);
+
+// Simple health check - 避免复杂路由
+app.post('/api/jobs',async (req, res) => {
+  console.log('job posted:', req.body);
+  try {
+    await producer.send({
+      topic: 'jobs',
+      messages: [
+        {
+          value: JSON.stringify(req.body),
+        },
+      ]
+    });
+    res.json({
+      status: 'ok',
+      message: 'message send to kafka',
+      payload: req.body,
+    })
+  }catch (error){
+    console.error('kafka message failed: ', error);
+    res.status(500).json({status:'error', message:'Kafka forward failed!'})
+  }
+});
+
 
 app.get('/', (req, res) => {
   res.send('Welcome to the NeatNest API!');
