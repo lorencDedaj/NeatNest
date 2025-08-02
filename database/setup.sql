@@ -1,0 +1,8 @@
+CREATE TABLE jobs (
+  id SERIAL PRIMARY KEY,
+  description TEXT NOT NULL,
+  deadline TIMESTAMP NOT NULL,
+  budget INTEGER NOT NULL,
+  created_by TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

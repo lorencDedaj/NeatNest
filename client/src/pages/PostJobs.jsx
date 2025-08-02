@@ -6,13 +6,67 @@ export default function PostJobs({user, logout}) {
 
   // TODO: 创建3个 useState 变量：description, deadline, pay
   // TODO: 再创建一个 submittedJob 状态变量，用于保存提交的 job
+  const [formJob, setFormJob] = useState({
+    description:'',
+    deadline: '',
+    budget: '',
+    createdBy:user
+  });
+  const [submittdJob, setSubmittedJob] = useState(null);
 
-  const handleSubmit = (e) => {
+  const handleChange = (e)=>{
+    const {name, value} = e.target;
+    setFormJob((pre)=>({
+        ...pre,
+        [name]: value,
+    }))
+  }
+
+  const handleSubmit =async (e) => {
     e.preventDefault();
 
+    const deadlineDate = new Date(formJob.deadline);
+
+    if (isNaN(deadlineDate.getTime())) {
+        alert("无效的时间格式，请重新输入");
+        return;
+    }
     // TODO: 构建一个 job 对象，包含 description, deadline, pay
-    // TODO: 把这个 job 保存到 submittedJob 状态中
-    // TODO: 清空所有表单输入框
+    const jobToSubmit={
+        description: formJob.description,
+        deadline: deadlineDate.toISOString(),
+        budget: Number(formJob.budget),
+        createdBy: formJob.createdBy
+    }
+    console.log(JSON.stringify(jobToSubmit))
+    
+
+    try {
+        const response = await fetch("/api/jobs",{
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json",
+            },
+            body: JSON.stringify(jobToSubmit),
+        })
+        if (!response.ok){
+            throw new Error("Failed to submit job!");
+        }
+        const jobres = await response.json();
+        // TODO: get savedJob from backend and save.
+        setSubmittedJob(jobres.payload);
+        
+        // TODO: clear the input form.
+        setFormJob({
+            description:'',
+            deadline: '',
+            budget: '',
+            createdBy: ''
+        })
+    }catch(err){
+        console.error("Submit failed:", err);
+    }
+
   };
 
   return (
@@ -25,13 +79,16 @@ export default function PostJobs({user, logout}) {
             {/* Job Description 输入框 */}
             {/* TODO: 用 textarea + tailwind class 美化 */}
             <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor='jobDesc'>
                 Job Description
             </label>
             <textarea
+                id="jobDesc"
+                name='description'
                 className="w-full border rounded-md p-2"
                 rows="3"
                 placeholder="Describe the job..."
+                onChange={handleChange}
                 // TODO: 设置 value 和 onChange
             ></textarea>
             </div>
@@ -43,8 +100,10 @@ export default function PostJobs({user, logout}) {
                 Deadline
             </label>
             <input
-                type="date"
+                type="datetime-local"
                 className="w-full border rounded-md p-2"
+                name="deadline"
+                onChange={handleChange}
                 // TODO: 设置 value 和 onChange
             />
             </div>
@@ -59,6 +118,8 @@ export default function PostJobs({user, logout}) {
                 type="number"
                 className="w-full border rounded-md p-2"
                 placeholder="e.g., 100"
+                name="budget"
+                onChange={handleChange}
                 // TODO: 设置 value 和 onChange
             />
             </div>
@@ -66,9 +127,15 @@ export default function PostJobs({user, logout}) {
             {/* Submit 按钮 */}
             <button
             type="submit"
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 mr-6"
             >
             Submit
+            </button>
+            <button
+            type="reset"
+            className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+            >
+            Reset
             </button>
         </form>
 
