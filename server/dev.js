@@ -1,4 +1,4 @@
-// scripts/dev.js 
+// scripts/dev.js
 import { exec } from 'child_process';
 
 console.log('🚀 Starting NeatNest development servers...\n');
