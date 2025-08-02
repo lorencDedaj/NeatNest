@@ -1,12 +1,13 @@
 //this controller will interface directly with PostgreSQL database - pulling an up-to-date list of jobs,
 // adding or deleting jobs
 
-const db = require("../models/db");
+// const db = require("../models/db");
+import db from '../models/db.js';
 
 // Get all jobs
-exports.getAllJobs = async (req, res, next) => {
+export const getAllJobs = async (req, res, next) => {
   try {
-    const result = await db.query("SELECT * FROM jobs");
+    const result = await db.query('SELECT * FROM jobs');
     res.json(result.rows);
   } catch (err) {
     next(err);
@@ -14,13 +15,13 @@ exports.getAllJobs = async (req, res, next) => {
 };
 
 // Get a specific job
-exports.getJobById = async (req, res, next) => {
+export const getJobById = async (req, res, next) => {
   try {
-    const result = await db.query("SELECT * FROM jobs WHERE id = $1", [
+    const result = await db.query('SELECT * FROM jobs WHERE id = $1', [
       req.params.id,
     ]);
     if (result.rows.length === 0)
-      return res.status(404).json({ error: "Job not found" });
+      return res.status(404).json({ error: 'Job not found' });
     res.json(result.rows[0]);
   } catch (err) {
     next(err);
@@ -28,9 +29,9 @@ exports.getJobById = async (req, res, next) => {
 };
 
 // Create a new job
-exports.createJob = async (req, res, next) => {
+export const createJob = async (req, res, next) => {
   const { title, location, description } = req.body;
-  if (!title) return res.status(400).json({ error: "Title is required" });
+  if (!title) return res.status(400).json({ error: 'Title is required' });
 
   try {
     const result = await db.query(
@@ -45,15 +46,15 @@ exports.createJob = async (req, res, next) => {
 };
 
 // Close a job
-exports.closeJob = async (req, res, next) => {
+export const closeJob = async (req, res, next) => {
   try {
     const result = await db.query(
       `UPDATE jobs SET status = 'closed' WHERE id = $1 RETURNING *`,
       [req.params.id]
     );
     if (result.rows.length === 0)
-      return res.status(404).json({ error: "Job not found" });
-    res.json({ message: "Job closed", job: result.rows[0] });
+      return res.status(404).json({ error: 'Job not found' });
+    res.json({ message: 'Job closed', job: result.rows[0] });
   } catch (err) {
     next(err);
   }
