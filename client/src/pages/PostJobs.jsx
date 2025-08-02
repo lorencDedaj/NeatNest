@@ -18,7 +18,7 @@ export default function PostJobs({user, logout}) {
   return (
     <div className="min-h-screen bg-gray-50">
         <Header user={user} logout={logout} />  
-        <div className="max-w-xl mx-auto p-6 bg-white shadow-md rounded-md mt-10">
+        <div className="max-w-md md:max-w-xl lg:max-w-2xl mx-auto p-6 bg-white shadow-md rounded-md mt-10">
         <h2 className="text-2xl font-bold mb-4 text-gray-800">Post a Job</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
