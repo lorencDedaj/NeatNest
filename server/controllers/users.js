@@ -1,5 +1,6 @@
 // import * as queries from '../models/queries.js';
 import db from '../models/db.js';
+import { sendMessage } from '../kafka/producer.js';
 
 // GET all users
 export const getUsers = async (req, res, next) => {
@@ -35,10 +36,18 @@ export const createUser = async (req, res, next) => {
       .json({ error: 'Email, password and role are required' });
   }
   try {
-    const result = await db.query(
+    const newUser = await db.query(
       'INSERT INTO users (email, password, role) VALUES ($1, $2, $3) RETURNING id, email, role',
       [email, password, role]
     );
+
+    console.log('Sending Kafka message...'); // Check before the Kafka call.
+    await sendMessage('user-events', {
+      type: 'USER_CREATED',
+      data: { userId: newUser.rows[0].id },
+    });
+    console.log('Kafka message sent.'); // Check after the Kafka call.
+
     res.status(201).json({ messge: 'User created successfuly' });
   } catch (err) {
     next(err);
