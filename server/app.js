@@ -35,6 +35,8 @@ import 'dotenv/config';
 import pool from './models/db.js'; // Import the pool
 import usersRoute from './routes/users.js';
 import jobsRouter from './routes/jobs.js';
+import { connectProducer } from './kafka/producer.js';
+import { runConsumer } from './kafka/consumer.js';
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -59,6 +61,7 @@ app.listen(PORT, async () => {
     console.error('❌ Database connection failed.', err);
     process.exit(1);
   }
-
+  await connectProducer();
+  await runConsumer();
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
