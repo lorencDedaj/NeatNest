@@ -1,11 +1,8 @@
-name: CI/CD Pipeline for lorencDedaj/NeatNest
-on:
-  push:
-    branches:
-      - main
+name: CI
+on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: echo "hello from osp v2"
+      - run: echo "Hello from AutoDeploy"
