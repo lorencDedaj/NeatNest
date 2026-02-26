@@ -1,283 +1,202 @@
 # NeatNest
-NeatNest app for cleaner who are looking fast jobs
-```
-job-portal/
-├── client/                    # React Frontend
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── JobCard.jsx           # Reusable component to display job info (title, budget, apply button)
-│   │   │   └── Header.jsx            # Navigation bar with user info and logout button
-│   │   ├── pages/
-│   │   │   ├── Login.jsx             # Login/register form, handles authentication
-│   │   │   ├── PostJobs.jsx          # Create new jobs, view posted jobs, manage applications
-│   │   │   └── FindJobs.jsx          # Browse available jobs, apply for jobs, view application status
-│   │   ├── App.jsx                   # Main app component with routing and global state
-│   │   └── index.js                  # React app entry point, renders App component
-│   ├── package.json                  # Frontend dependencies (React, axios, react-router-dom)
-│   └── .env                          # Frontend environment variables (API URL)
-├── server/                    # Node.js Backend 
-│   ├── controllers/
-│   │   ├── auth.js                   # Handle user registration, login, JWT token generation
-│   │   ├── jobs.js                   # Create jobs, get all jobs, get user jobs, close jobs
-│   │   └── applications.js           # Apply for jobs, approve applications, get applications
-│   ├── models/
-│   │   ├── db.js                     # PostgreSQL database connection and pool setup
-│   │   └── queries.js                # All SQL queries for users, jobs, applications, stats
-│   ├── routes/
-│   │   └── api.js                    # All API endpoints routing (/auth, /jobs, /applications)
-│   ├── kafka/
-│   │   ├── producer.js               # Send events to Kafka (job created, applied, approved)
-│   │   └── consumer.js               # Listen to Kafka events and update user statistics
-│   ├── app.js                        # Express server setup, middleware, start server and Kafka
-│   ├── package.json                  # Backend dependencies (Express, KafkaJS, PostgreSQL, JWT)
-│   └── .env                          # Backend environment variables (DB config, Kafka config)
-├── database/
-│   └── setup.sql                     # Database schema creation (users, jobs, applications, stats tables)
-└── README.md                         # Project documentation and setup instructions
+
+NeatNest is a full-stack job posting app with a React frontend and an Express backend. It uses Kafka for asynchronous job event processing, PostgreSQL for persistence, and email notifications for newly posted jobs.
+
+## Features
+
+- Google sign-in (frontend)
+- Recruiter flow to post jobs
+- Job seeker flow to browse jobs
+- Express REST API for jobs and users
+- Kafka producer/consumer for job events
+- PostgreSQL storage for users/jobs
+- Email notifications via Nodemailer when new jobs are processed
+
+## Tech Stack
+
+- Frontend: React, Vite, Tailwind CSS, React Router
+- Backend: Node.js, Express, KafkaJS, pg
+- Database: PostgreSQL
+- Messaging: Apache Kafka (with Zookeeper via Docker Compose)
+- Auth UI: Google OAuth (`@react-oauth/google`)
+
+## Project Structure
+
+```text
+.
+├── client/              # React + Vite frontend
+├── server/              # Express API + Kafka producer/consumer
+├── database/            # SQL setup/seed scripts
+├── docker-compose.yml   # Kafka + Zookeeper local services
+├── package.json         # Root workspace scripts
+└── README.md
 ```
 
-┌─────────────────┐    ┌─────────────────┐
-│     Client      │    │     Server      │
-│   (React App)   │────│   (Node.js)     │
-│                 │    │  Single App     │
-└─────────────────┘    └─────────────────┘
-                                │
-                       ┌─────────────────┐
-                       │     Kafka       │
-                       │ (Local Install) │
-                       └─────────────────┘
-                                │
-                       ┌─────────────────┐
-                       │   PostgreSQL    │
-                       │ (Local Install) │
-                       └─────────────────┘
-Login Page
-╔══════════════════════════════════════╗
-║            Job Portal                ║
-╠══════════════════════════════════════╣
-║                                      ║
-║  Username: [________________]        ║
-║  Password: [________________]        ║
-║                                      ║
-║          [    LOGIN    ]             ║
-║                                      ║
-║  No account? [Register]              ║
-║                                      ║
-╚══════════════════════════════════════╝
-Main Dashboard
-╔══════════════════════════════════════╗
-║  Job Portal              [Logout]    ║
-╠══════════════════════════════════════╣
-║                                      ║
-║  Hello Alex! Choose what to do:      ║
-║                                      ║
-║  [Post Jobs]  [Find Jobs]  [My Stats]║
-║                                      ║
-║  ════════════════════════════════════║
-║           Latest Jobs                ║
-║  ┌────────────────────────────────┐  ║
-║  │ Build Website | $500 | [Apply] │  ║
-║  └────────────────────────────────┘  ║
-║  ┌────────────────────────────────┐  ║
-║  │ Create Mobile App|$800 |[Apply]│  ║
-║  └────────────────────────────────┘  ║
-║                                      ║
-╚══════════════════════════════════════╝
+## Prerequisites
 
-Post Jobs Page Interface
-╔══════════════════════════════════════════════════════════════════════════════╗
-║  Job Portal                                          Alex | [Logout]         ║
-╠══════════════════════════════════════════════════════════════════════════════╣
-║                                                                              ║
-║  [← Back to Dashboard]                                                       ║
-║                                                                              ║
-║  ══════════════════════════════════════════════════════════════════════════  ║
-║                           CREATE NEW JOB                                    ║
-║  ══════════════════════════════════════════════════════════════════════════  ║
-║                                                                              ║
-║  Job Title: [_____________________________________________]                  ║
-║                                                                              ║
-║  Description:                                                                ║
-║  ┌────────────────────────────────────────────────────────────────────────┐ ║
-║  │ Describe what you need done, required skills, timeline, etc...         │ ║
-║  │                                                                        │ ║
-║  │                                                                        │ ║
-║  │                                                                        │ ║
-║  └────────────────────────────────────────────────────────────────────────┘ ║
-║                                                                              ║
-║  Budget: $[_______]    Deadline: [MM/DD/YYYY]                              ║
-║                                                                              ║
-║                           [  POST JOB  ]                                    ║
-║                                                                              ║
-║  ══════════════════════════════════════════════════════════════════════════  ║
-║                            MY POSTED JOBS                                   ║
-║  ══════════════════════════════════════════════════════════════════════════  ║
-║                                                                              ║
-║  ┌────────────────────────────────────────────────────────────────────────┐ ║
-║  │ Build E-commerce Website                               Posted: 2 days ago│ ║
-║  │ Budget: $1500 | Status: Open | Applications: 5                          │ ║
-║  │ [View Applications] [Edit Job] [Close Job]                               │ ║
-║  └────────────────────────────────────────────────────────────────────────┘ ║
-║                                                                              ║
-║  ┌────────────────────────────────────────────────────────────────────────┐ ║
-║  │ Mobile App UI Design                                   Posted: 1 week ago│ ║
-║  │ Budget: $800 | Status: Closed | Applications: 12                        │ ║
-║  │ [View Applications] [Reopen Job]                                         │ ║
-║  └────────────────────────────────────────────────────────────────────────┘ ║
-║                                                                              ║
-║  ┌────────────────────────────────────────────────────────────────────────┐ ║
-║  │ API Integration Project                                Posted: 3 days ago│ ║
-║  │ Budget: $600 | Status: Open | Applications: 3                           │ ║
-║  │ [View Applications] [Edit Job] [Close Job]                               │ ║
-║  └────────────────────────────────────────────────────────────────────────┘ ║
-║                                                                              ║
-║                                                                              ║
-╚══════════════════════════════════════════════════════════════════════════════╝
+- Node.js 18+
+- npm 9+
+- PostgreSQL (local or remote)
+- Docker + Docker Compose (for Kafka/Zookeeper)
+- Google OAuth Client ID (for frontend login)
+- Gmail app password (or working SMTP creds) for email notifications
 
-When "View Applications" is clicked:
-╔══════════════════════════════════════════════════════════════════════════════╗
-║  Applications for: "Build E-commerce Website"                   [← Back]    ║
-╠══════════════════════════════════════════════════════════════════════════════╣
-║                                                                              ║
-║  Job Details: Budget: $1500 | Posted: 2 days ago | Status: Open            ║
-║                                                                              ║
-║  ══════════════════════════════════════════════════════════════════════════  ║
-║                             APPLICATIONS (5)                                ║
-║  ══════════════════════════════════════════════════════════════════════════  ║
-║                                                                              ║
-║  ┌────────────────────────────────────────────────────────────────────────┐ ║
-║  │ john_dev                                            Applied: 1 day ago   │ ║
-║  │ Status: Pending                                                          │ ║
-║  │ "I have 5 years experience in React and Node.js..."                     │ ║
-║  │                                    [APPROVE] [REJECT] [View Profile]     │ ║
-║  └────────────────────────────────────────────────────────────────────────┘ ║
-║                                                                              ║
-║  ┌────────────────────────────────────────────────────────────────────────┐ ║
-║  │ sarah_designer                                      Applied: 2 hours ago │ ║
-║  │ Status: Pending                                                          │ ║
-║  │ "I specialize in full-stack development and have built..."               │ ║
-║  │                                    [APPROVE] [REJECT] [View Profile]     │ ║
-║  └────────────────────────────────────────────────────────────────────────┘ ║
-║                                                                              ║
-║  ┌────────────────────────────────────────────────────────────────────────┐ ║
-║  │ mike_coder                                          Applied: 1 day ago   │ ║
-║  │ Status: APPROVED ✓                                                       │ ║
-║  │ "Expert in e-commerce platforms, ready to start immediately"             │ ║
-║  │                                             [Contact] [View Profile]     │ ║
-║  └────────────────────────────────────────────────────────────────────────┘ ║
-║                                                                              ║
-╚══════════════════════════════════════════════════════════════════════════════╝
+## Environment Variables
 
+### `server/.env`
 
-╔══════════════════════════════════════════════════════════════════════════════╗
-║  Job Portal                                          Alex | [Logout]         ║
-╠══════════════════════════════════════════════════════════════════════════════╣
-║                                                                              ║
-║  [← Back to Dashboard]                                                       ║
-║                                                                              ║
-║  ══════════════════════════════════════════════════════════════════════════  ║
-║                           AVAILABLE JOBS                                    ║
-║  ══════════════════════════════════════════════════════════════════════════  ║
-║                                                                              ║
-║  Filter: [All Jobs ▼] Budget: $[___] - $[___] [Apply Filter] [Clear]       ║
-║                                                                              ║
-║  ┌────────────────────────────────────────────────────────────────────────┐ ║
-║  │ Build E-commerce Website                           Posted: 2 days ago    │ ║
-║  │ Budget: $1500 | Deadline: 01/15/2025 | Applications: 5                  │ ║
-║  │ "Looking for full-stack developer to build online store with React..."   │ ║
-║  │ Skills: React, Node.js, MongoDB, Payment Integration                     │ ║
-║  │                                              [APPLY NOW] [View Details]  │ ║
-║  └────────────────────────────────────────────────────────────────────────┘ ║
-║                                                                              ║
-║  ┌────────────────────────────────────────────────────────────────────────┐ ║
-║  │ API Integration Project                            Posted: 3 days ago    │ ║
-║  │ Budget: $600 | Deadline: 12/30/2024 | Applications: 3                   │ ║
-║  │ "Need to integrate third-party APIs into existing system..."             │ ║
-║  │ Skills: REST APIs, JavaScript, JSON, Authentication                      │ ║
-║  │                                              [APPLY NOW] [View Details]  │ ║
-║  └────────────────────────────────────────────────────────────────────────┘ ║
-║                                                                              ║
-║  ┌────────────────────────────────────────────────────────────────────────┐ ║
-║  │ Mobile App UI Design                               Posted: 1 week ago    │ ║
-║  │ Budget: $800 | Deadline: 01/20/2025 | Applications: 8                   │ ║
-║  │ "Design modern UI/UX for iOS and Android mobile app..."                  │ ║
-║  │ Skills: Figma, UI/UX Design, Mobile Design, Prototyping                 │ ║
-║  │                                              [APPLY NOW] [View Details]  │ ║
-║  └────────────────────────────────────────────────────────────────────────┘ ║
-║                                                                              ║
-║  ══════════════════════════════════════════════════════════════════════════  ║
-║                          MY APPLICATIONS                                    ║
-║  ══════════════════════════════════════════════════════════════════════════  ║
-║                                                                              ║
-║  ┌────────────────────────────────────────────────────────────────────────┐ ║
-║  │ React Dashboard Development                        Applied: 1 day ago    │ ║
-║  │ Budget: $900 | Status: PENDING ⏳                                        │ ║
-║  │ "Waiting for employer response..."                                       │ ║
-║  │                                              [View Job] [Withdraw]       │ ║
-║  └────────────────────────────────────────────────────────────────────────┘ ║
-║                                                                              ║
-║  ┌────────────────────────────────────────────────────────────────────────┐ ║
-║  │ Website Bug Fixes                                  Applied: 3 days ago   │ ║
-║  │ Budget: $300 | Status: APPROVED ✅                                       │ ║
-║  │ "Congratulations! You got the job. Contact employer."                    │ ║
-║  │                                              [View Job] [Contact Client] │ ║
-║  └────────────────────────────────────────────────────────────────────────┘ ║
-║                                                                              ║
-║  ┌────────────────────────────────────────────────────────────────────────┐ ║
-║  │ Logo Design Project                                Applied: 1 week ago   │ ║
-║  │ Budget: $200 | Status: REJECTED ❌                                       │ ║
-║  │ "Sorry, employer chose another candidate."                               │ ║
-║  │                                              [View Job]                  │ ║
-║  └────────────────────────────────────────────────────────────────────────┘ ║
-║                                                                              ║
-║  ══════════════════════════════════════════════════════════════════════════  ║
-║                           MY STATISTICS                                     ║
-║  ══════════════════════════════════════════════════════════════════════════  ║
-║                                                                              ║
-║  ┌────────────────────────────────────────────────────────────────────────┐ ║
-║  │ Total Applications: 15        │ Jobs Completed: 8                        │ ║
-║  │ Pending Applications: 3       │ Success Rate: 53%                        │ ║
-║  │ Total Earnings: $2,400        │ Average Job Value: $300                  │ ║
-║  └────────────────────────────────────────────────────────────────────────┘ ║
-║                                                                              ║
-╚══════════════════════════════════════════════════════════════════════════════╝
+Create `server/.env` with:
 
-╔══════════════════════════════════════════════════════════════════════════════╗
-║  Apply for Job: "Build E-commerce Website"                     [← Back]     ║
-╠══════════════════════════════════════════════════════════════════════════════╣
-║                                                                              ║
-║  Job Details:                                                                ║
-║  • Budget: $1500                                                             ║
-║  • Deadline: 01/15/2025                                                      ║
-║  • Posted by: john_employer                                                  ║
-║  • Current Applications: 5                                                   ║
-║                                                                              ║
-║  ──────────────────────────────────────────────────────────────────────────  ║
-║                                                                              ║
-║  Full Description:                                                           ║
-║  "Looking for an experienced full-stack developer to build a modern         ║
-║  e-commerce website. Must have experience with React, Node.js, MongoDB,     ║
-║  and payment gateway integration. The project includes user authentication, ║
-║  product catalog, shopping cart, and admin dashboard..."                    ║
-║                                                                              ║
-║  Required Skills:                                                            ║
-║  • React.js & JavaScript                                                     ║
-║  • Node.js & Express                                                         ║
-║  • MongoDB Database                                                          ║
-║  • Payment Integration (Stripe/PayPal)                                       ║
-║  • Responsive Design                                                         ║
-║                                                                              ║
-║  ──────────────────────────────────────────────────────────────────────────  ║
-║                                                                              ║
-║  Your Application Message:                                                   ║
-║  ┌────────────────────────────────────────────────────────────────────────┐ ║
-║  │ Hi! I'm interested in your e-commerce project. I have 5+ years of      │ ║
-║  │ experience with React and Node.js, and I've built similar projects...  │ ║
-║  │                                                                        │ ║
-║  │                                                                        │ ║
-║  └────────────────────────────────────────────────────────────────────────┘ ║
-║                                                                              ║
-║                        [SUBMIT APPLICATION] [Cancel]                        ║
-║                                                                              ║
-╚══════════════════════════════════════════════════════════════════════════════╝
+```env
+PORT=8000
+DB_USER=your_db_user
+DB_HOST=localhost
+DB_DATABASE=neatnest
+DB_PASSWORD=your_db_password
+DB_PORT=5432
+KAFKA_BROKERS=localhost:9092
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASS=your_app_password
+NOTIFICATION_TO=recipient@example.com
+```
 
+### `client/.env`
+
+Create `client/.env` with:
+
+```env
+VITE_GOOGLE_CLIENT_ID=your_google_oauth_client_id
+```
+
+## Installation
+
+From the repo root:
+
+```bash
+npm install
+npm run install-client
+npm run install-server
+```
+
+Or use the helper script:
+
+```bash
+npm run install-all
+```
+
+## Database Setup
+
+1. Create a PostgreSQL database (example: `neatnest`).
+2. Run SQL scripts from `database/`.
+
+Example:
+
+```bash
+psql -U <user> -d neatnest -f database/setup.sql
+psql -U <user> -d neatnest -f database/seed.sql
+```
+
+Note: The SQL scripts in `database/` and some server controllers are not fully in sync in this branch. Review table definitions before seeding/running if you hit schema errors.
+
+## Running Kafka (Docker)
+
+Start Kafka and Zookeeper:
+
+```bash
+docker compose up -d
+```
+
+Stop them:
+
+```bash
+docker compose down
+```
+
+## Running the App
+
+### Option 1: Start frontend and backend separately
+
+Backend:
+
+```bash
+npm run dev-server
+```
+
+Frontend:
+
+```bash
+npm run dev-client
+```
+
+### Option 2: Use the root dev helper
+
+```bash
+npm run dev
+```
+
+## Local URLs
+
+- Frontend: `http://localhost:3000`
+- Backend API: `http://localhost:8000`
+
+Vite proxies `/api/*` requests from the frontend to the backend.
+
+## API Endpoints (Current Routes)
+
+### Health / Root
+
+- `GET /` - API welcome message
+
+### Jobs
+
+- `POST /api/jobs` - Sends a job payload to Kafka (then consumer stores it in PostgreSQL)
+- `GET /api/jobs` - Returns all jobs from PostgreSQL
+- `GET /api/jobs/:id` - Returns a job by ID
+
+### Users
+
+- `GET /api/users` - Returns all users
+- `GET /api/users/:id` - Returns a user by ID
+- `POST /api/users` - Creates a user and emits a Kafka user event
+- `DELETE /api/users/:id` - Deletes a user
+
+## Example Job Payload (`POST /api/jobs`)
+
+```json
+{
+  "description": "Deep clean 2-bedroom apartment",
+  "deadline": "2026-03-01T16:00:00.000Z",
+  "budget": 150,
+  "createdBy": "Alex"
+}
+```
+
+## Kafka Flow (Jobs)
+
+1. Frontend submits a job to `POST /api/jobs`
+2. Backend producer publishes the message to Kafka topic `jobs`
+3. Kafka consumer reads the message
+4. Consumer inserts job into PostgreSQL
+5. Consumer sends an email notification
+
+## Known Issues / Notes
+
+- `server/app.js` defines `POST /api/jobs` directly and also mounts `server/routes/jobs.js`; the direct route handles the request first.
+- `server/kafka/producer.js` currently sends all messages to the `jobs` topic even when a different topic name is passed.
+- `database/setup.sql`, `database/seed.sql`, and controller queries reference different schemas in places.
+- `server/models/db.js` logs database connection environment values on startup (including presence of secrets), which may not be desirable outside local development.
+
+## CI
+
+A basic GitHub Actions workflow exists at `.github/workflows/ci.yml` and currently runs a placeholder step.
+
+## Contributing
+
+1. Create a feature branch
+2. Make your changes
+3. Test locally (frontend, backend, Kafka, DB)
+4. Open a pull request
+
+## License
+
+No license is currently specified in this repository.
